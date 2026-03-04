@@ -35,5 +35,3 @@ Route::get('/pomodoro/manage', [PomodoroController::class, 'manage'])->name('pom
 Route::post('/pomodoro/hide', [PomodoroController::class, 'hideCategory'])->name('pomodoro.hide');
 
 Route::post('/records', [PomoRecordController::class, 'store']);
-
-Route::post('/records', [PomoRecordController::class, 'store']);
