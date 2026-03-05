@@ -3,35 +3,37 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\PomoRecord; // ★これが必要でした！
 use Illuminate\Support\Facades\DB;
 
 class PomoRecordController extends Controller
 {
-    // ★ここから追加！ 自分の記録を全部取り出す処理
+    // 自分の記録を全部取り出す処理（GET）
     public function index(Request $request)
     {
         // 通行証（トークン）を持ってきたユーザーを特定
         $user = $request->user();
 
-        // そのユーザーの記録だけを、新しい順（降順）で全部取得
+        // そのユーザーの記録だけを、新しい順で取得
         $records = PomoRecord::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+                               ->orderBy('created_at', 'desc')
+                               ->get();
 
-        // 取得した記録をカレンダー（オランダ）へお返事
         return response()->json($records);
     }
+
+    // 自分の記録を保存する処理（POST）
     public function store(Request $request)
     {
-        // 受け取ったデータを pomo_records テーブルに保存する
-        DB::table('pomo_records')->insert([
+        $user = $request->user(); // 誰が送ってきたか特定
+
+        // データベースに保存
+        $record = PomoRecord::create([
+            'user_id' => $user->id, // ★誰のデータか記録！
             'task_name' => $request->task_name,
-            'pomodoro_count' => 1, // 今回は1回分として記録
-            'duration_minutes' => $request->duration_minutes,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'pomo_count' => $request->pomo_count ?? 1,
         ]);
 
-        return response()->json(['message' => '保存成功！']);
+        return response()->json($record);
     }
 }
