@@ -7,6 +7,20 @@ use Illuminate\Support\Facades\DB;
 
 class PomoRecordController extends Controller
 {
+    // ★ここから追加！ 自分の記録を全部取り出す処理
+    public function index(Request $request)
+    {
+        // 通行証（トークン）を持ってきたユーザーを特定
+        $user = $request->user();
+
+        // そのユーザーの記録だけを、新しい順（降順）で全部取得
+        $records = PomoRecord::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 取得した記録をカレンダー（オランダ）へお返事
+        return response()->json($records);
+    }
     public function store(Request $request)
     {
         // 受け取ったデータを pomo_records テーブルに保存する
