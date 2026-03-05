@@ -12,5 +12,8 @@ Route::get('/user', function (Request $request) {
 // 外部アプリ（Electron）専用の受付
 Route::post('/records', [PomoRecordController::class, 'store']); // ← これを追加
 
-// 新規登録の受付 ← これを追加
-Route::post('/register', [AuthController::class, 'register']);
+// 新規登録の受付
+Route::post('/register', [AuthController::class, 'register']); 
+
+// ログインの受付 ← ★これを追加！
+Route::post('/login', [AuthController::class, 'login']);
