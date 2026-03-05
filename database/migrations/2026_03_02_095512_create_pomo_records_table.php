@@ -8,15 +8,14 @@ return new class extends Migration {
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('pomo_records', function (Blueprint $table) {
             $table->id();
-            $table->string('task_name');       // 学習内容（例：PHP, 筋トレ）
-            $table->integer('pomodoro_count'); // 完了したセット数（例：1）
-            $table->integer('duration_minutes')->default(25); // 1セット何分か
-            $table->text('memo')->nullable();  // ちょっとしたメモ
-            $table->timestamps();              // 作成日時（いつやったか）
+            $table->unsignedBigInteger('user_id')->nullable(); // ★誰の記録か覚える列を追加！
+            $table->string('task_name');
+            $table->integer('pomo_count')->default(1); // ★列の名前を pomo_count に合わせる！
+            $table->timestamps();
         });
     }
 

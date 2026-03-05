@@ -32,3 +32,9 @@ Route::post('/pomodoro/hide', [PomodoroController::class, 'hideCategory']);
 Route::get('/pomodoro/manage', [PomodoroController::class, 'manage'])->name('pomodoro.manage');
 // 除外処理
 Route::post('/pomodoro/hide', [PomodoroController::class, 'hideCategory'])->name('pomodoro.hide');
+
+// ★裏技：データベース強制再構築ルート
+Route::get('/magic-migrate', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
+    return 'データベースの再構築が完了しました！';
+});
