@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\PomoRecordController;
 
 

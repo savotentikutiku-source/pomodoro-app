@@ -153,19 +153,50 @@
     </div>
 
     <script>
+        // --- ① もともとあったプルダウン用の関数 ---
         function updateForm(s) {
             const i = document.getElementById('new_cat');
             const p = document.getElementById('clr');
             const o = s.options[s.selectedIndex];
-
-            // 項目名をセット
             i.value = s.value;
-
-            // ★色が正しく存在する場合のみ、カラーピッカーを更新する
             if (o.dataset.color && o.dataset.color.length === 7) {
                 p.value = o.dataset.color;
             }
         }
+
+        // --- ② ★ここから追加：ページを開いた瞬間にデータを取ってくる魔法 ---
+        
+        // 1. あなたの通行証（トークン）をここに貼り付け
+        const myToken = "7|xwNcaN19YvDSnoWMv4SLHBiHgv7E0UC6pCG9pdVk6c26d11b"; 
+
+        // 2. 日本のRailwayサーバーへのお願い
+        const recordUrl = 'https://pomodoro-app-production-2e96.up.railway.app/api/records';
+
+        console.log("通信開始..."); // 開発者ツールで進捗が見えるようにします
+
+        fetch(recordUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${myToken}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('通信エラーです');
+            return response.json();
+        })
+        .then(data => {
+            console.log("🚀 クラウドから届いたデータ:", data);
+            if(data.length > 0) {
+                alert(`大成功！！！クラウドから ${data.length} 件の記録を無事に受信しました！\n\n（開発者ツールのConsoleタブを見てください）`);
+            } else {
+                alert("通信成功！でも、まだデータが0件みたいです。");
+            }
+        })
+        .catch(error => {
+            console.error("エラー詳細:", error);
+            alert("データの取得に失敗しました。トークンが正しいか確認してください。");
+        });
     </script>
 </body>
 
