@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Pomodoro;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB; // ★DB::rawを使うために必要です
+use Illuminate\Support\Facades\DB;
 
 class PomodoroController extends Controller
 {
@@ -22,9 +22,9 @@ class PomodoroController extends Controller
             $date->addDay();
         }
 
-        // ★ここを修正：同じ日・項目・色のデータを合算（SUM）してから取得します
+        // ★ここを修正：削除ボタンがパニックにならないよう「代表のID（MAX(id)）」を持たせます！
         $logs = Pomodoro::whereBetween('date', [$startOfMonth, $endOfMonth])
-            ->select('date', 'category', 'color', DB::raw('SUM(count) as count'))
+            ->select('date', 'category', 'color', DB::raw('SUM(count) as count'), DB::raw('MAX(id) as id'))
             ->groupBy('date', 'category', 'color')
             ->get()
             ->groupBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
@@ -68,7 +68,7 @@ class PomodoroController extends Controller
             ]);
         }
 
-        // ★魔法の1行：過去の同じ項目も、今回選んだ色にすべて自動で統一する
+        // 過去の同じ項目も、今回選んだ色にすべて自動で統一する
         Pomodoro::where('category', $request->category)->update(['color' => $color]);
 
         return back();
