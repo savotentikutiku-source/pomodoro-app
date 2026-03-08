@@ -128,7 +128,8 @@
                 @foreach($calendarDates->chunk(7) as $week)
                     <tr>
                         @foreach($week as $idx => $date)
-                            <td class="{{ $idx == 0 ? 'sun' : ($idx == 6 ? 'sat' : '') }}"
+                            <!-- <td class="{{ $idx == 0 ? 'sun' : ($idx == 6 ? 'sat' : '') }}" -->
+                            <td id="cell-{{ $date->format('Y-m-d') }}" class="{{ $idx == 0 ? 'sun' : ($idx == 6 ? 'sat' : '') }}"
                                 style="{{ $date->month != $startOfMonth->month ? 'opacity: 0.2;' : '' }}">
                                 <strong>{{ $date->day }}</strong>
                                 @if(isset($logs[$date->format('Y-m-d')]))
@@ -166,13 +167,13 @@
 
         // --- ② ★ここから追加：ページを開いた瞬間にデータを取ってくる魔法 ---
         
-        // 1. あなたの通行証（トークン）をここに貼り付け
-        const myToken = "7|xwNcaN19YvDSnoWMv4SLHBiHgv7E0UC6pCG9pdVk6c26d11b"; 
+        // 1. あなたの通行証（トークン）
+        const myToken = "1|BMz5VBWplg3Zr063bSfb635GnxP8EiukDUInIQ5d21c61d23"; 
 
         // 2. 日本のRailwayサーバーへのお願い
         const recordUrl = 'https://pomodoro-app-production-2e96.up.railway.app/api/records';
 
-        console.log("通信開始..."); // 開発者ツールで進捗が見えるようにします
+        console.log("通信開始..."); 
 
         fetch(recordUrl, {
             method: 'GET',
@@ -187,15 +188,40 @@
         })
         .then(data => {
             console.log("🚀 クラウドから届いたデータ:", data);
+            
             if(data.length > 0) {
-                alert(`大成功！！！クラウドから ${data.length} 件の記録を無事に受信しました！\n\n（開発者ツールのConsoleタブを見てください）`);
+                // データがある場合：届いた記録を1つずつカレンダーに配置していく！
+                data.forEach(record => {
+                    const dateStr = record.created_at.split('T')[0];
+                    const targetCell = document.getElementById('cell-' + dateStr);
+                    
+                    if(targetCell) {
+                        // ★ここから進化！色を自動で探す魔法
+                        let badgeColor = '#4f46e5'; // 見つからなかった時の基本色
+                        
+                        // 画面上のプルダウンから、同じカテゴリー名を探して色をゲットする
+                        const options = document.querySelectorAll('#sel option');
+                        options.forEach(opt => {
+                            if (opt.value === record.task_name && opt.dataset.color) {
+                                badgeColor = opt.dataset.color;
+                            }
+                        });
+
+                        // バッジを作って中に入れる！
+                        const badge = document.createElement('div');
+                        badge.className = 'log-badge';
+                        badge.style.backgroundColor = badgeColor; // ★見つけた色を塗る！
+                        badge.innerHTML = `<div class="log-text">${record.pomo_count} : ${record.task_name}</div>`;
+                        
+                        targetCell.appendChild(badge);
+                    }
+                });
             } else {
-                alert("通信成功！でも、まだデータが0件みたいです。");
+                console.log("通信成功！でも、まだデータが0件みたいです。");
             }
         })
         .catch(error => {
             console.error("エラー詳細:", error);
-            alert("データの取得に失敗しました。トークンが正しいか確認してください。");
         });
     </script>
 </body>
