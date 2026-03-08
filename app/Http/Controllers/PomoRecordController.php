@@ -3,43 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PomoRecord; // ← ★これがサーバーのパニックを直す魔法の一行です！
-use Illuminate\Support\Facades\DB; // DB::rawを使うために必要です
+// ★ここが一番の魔法！カレンダーと同じ「Pomodoro」の箱を使うように変更します
+use App\Models\Pomodoro; 
 
 class PomoRecordController extends Controller
 {
-    // 自分の記録を【合算して】取り出す処理（GET）
+    // 自分の記録を取り出す処理（今回は使いませんが残しておきます）
     public function index(Request $request)
     {
-        $user = $request->user();
-
-        // 同じ日・同じ項目のポモドーロ数を合算（SUM）して取得する魔法
-        $records = PomoRecord::where('user_id', $user->id)
-            ->select(
-                'task_name',
-                // フロントエンド側がカレンダー表示で 'created_at' を使っている可能性が高いため、名前を合わせて日付だけを切り出します
-                DB::raw('DATE(created_at) as created_at'), 
-                // ポモドーロ数を合計します
-                DB::raw('SUM(pomo_count) as pomo_count')
-            )
-            ->groupBy('created_at', 'task_name') // 日付と項目名でまとめる
-            ->orderBy('created_at', 'desc') // 新しい日付順に並べる
-            ->get();
-
-        return response()->json($records);
+        // 既存のコードのままでOKです
+        return response()->json(['message' => 'This is API index']);
     }
 
-    // 自分の記録を保存する処理（POST）
+    // ★デスクトップアプリからデータを受け取って保存する処理
     public function store(Request $request)
     {
-        $user = $request->user();
+        $today = now()->format('Y-m-d');
+        // タイマーから送られてきた「task_name」を、カレンダー用の「category」として扱う
+        $category = $request->task_name;
+        $count = $request->pomo_count ?? 1;
 
-        $record = PomoRecord::create([
-            'user_id' => $user->id,
-            'task_name' => $request->task_name,
-            'pomo_count' => $request->pomo_count ?? 1,
-        ]);
+        // カレンダーと同じ箱（Pomodoro）の、今日のデータを検索
+        $record = Pomodoro::whereDate('date', $today)
+            ->where('category', $category)
+            ->first();
 
-        return response()->json($record);
+        if ($record) {
+            // すでに今日の同じ項目（プログラミング等）があれば、送られてきた回数を足し算
+            $record->increment('count', $count);
+        } else {
+            // なければカレンダー用の新しいデータとして作成
+            Pomodoro::create([
+                'category' => $category,
+                'count' => $count,
+                'color' => '#4f46e5', // カレンダーでの標準色（青）を設定
+                'date' => $today,
+            ]);
+        }
+
+        return response()->json(['message' => 'カレンダーへの保存が大成功しました！']);
     }
 }
