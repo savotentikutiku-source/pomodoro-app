@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Pomodoro;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; // ★DB::rawを使うために必要です
 
 class PomodoroController extends Controller
 {
@@ -22,7 +22,10 @@ class PomodoroController extends Controller
             $date->addDay();
         }
 
+        // ★ここを修正：同じ日・項目・色のデータを合算（SUM）してから取得します
         $logs = Pomodoro::whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->select('date', 'category', 'color', DB::raw('SUM(count) as count'))
+            ->groupBy('date', 'category', 'color')
             ->get()
             ->groupBy(fn($item) => Carbon::parse($item->date)->format('Y-m-d'));
 
