@@ -2,38 +2,28 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
-use App\Http\Controllers\PomoRecordController;
 
-
-
+// 1. トップページにアクセスしたら、自動でカレンダーへワープさせる便利な設定！
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/pomodoro');
 });
 
-Route::get('/pomodoro', function () {
-    return view('pomodoro');
-});
+// 2. カレンダー画面を表示
+Route::get('/pomodoro', [PomodoroController::class, 'index'])->name('pomodoro.index');
 
-   // routes/web.php
-
-
-// 画面を表示する道
-Route::get('/pomodoro', [PomodoroController::class, 'index']);
-
-// 保存ボタンを押した時の道
+// 3. 記録を保存
 Route::post('/pomodoro', [PomodoroController::class, 'store'])->name('pomodoro.store');
 
-// 削除用のルート（DELETEメソッド）
+// 4. 記録を削除
 Route::delete('/pomodoro/{id}', [PomodoroController::class, 'destroy'])->name('pomodoro.destroy');
 
-Route::post('/pomodoro/hide', [PomodoroController::class, 'hideCategory']);
-
-// 管理ページの表示
+// 5. リスト整理（管理）ページを表示
 Route::get('/pomodoro/manage', [PomodoroController::class, 'manage'])->name('pomodoro.manage');
-// 除外処理
+
+// 6. リストの表示・非表示を切り替え
 Route::post('/pomodoro/hide', [PomodoroController::class, 'hideCategory'])->name('pomodoro.hide');
 
-// ★裏技：データベース強制再構築ルート
+// ★ 裏技：データベース強制再構築
 Route::get('/magic-migrate', function () {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
     return 'データベースの再構築が完了しました！';

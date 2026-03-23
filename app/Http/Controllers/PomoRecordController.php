@@ -18,25 +18,25 @@ class PomoRecordController extends Controller
     // ★デスクトップアプリからデータを受け取って保存する処理
     public function store(Request $request)
     {
-        $today = now()->format('Y-m-d');
-        // タイマーから送られてきた「task_name」を、カレンダー用の「category」として扱う
+        // タイムゾーンのズレを防ぐため、日本時間を明示的に指定
+        $today = now()->timezone('Asia/Tokyo')->format('Y-m-d'); 
+        
         $category = $request->task_name;
         $count = $request->pomo_count ?? 1;
 
-        // カレンダーと同じ箱（Pomodoro）の、今日のデータを検索
+        // ★ user_id は使わずに検索します！
         $record = Pomodoro::whereDate('date', $today)
             ->where('category', $category)
             ->first();
 
         if ($record) {
-            // すでに今日の同じ項目（プログラミング等）があれば、送られてきた回数を足し算
             $record->increment('count', $count);
         } else {
-            // なければカレンダー用の新しいデータとして作成
             Pomodoro::create([
+                // ★ user_id はテーブルに無いので消しました！
                 'category' => $category,
                 'count' => $count,
-                'color' => '#4f46e5', // カレンダーでの標準色（青）を設定
+                'color' => '#4f46e5',
                 'date' => $today,
             ]);
         }
